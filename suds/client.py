@@ -621,7 +621,6 @@ class SoapClient:
         transport = self.options.transport
         retxml = self.options.retxml
         prettyxml = self.options.prettyxml
-        log.debug('sending to (%s)\nmessage:\n%s', location, soapenv)
         try:
             self.last_sent(soapenv)
             plugins = PluginContainer(self.options.plugins)
@@ -634,7 +633,9 @@ class SoapClient:
             plugins.message.sending(envelope=soapenv)
             request = Request(location, soapenv)
             request.headers = self.headers()
+            log.debug('\nSending SOAP envelope:\n%s', request)
             reply = transport.send(request)
+            log.debug('\nReceived reply:\n%s', reply)
             ctx = plugins.message.received(reply=reply.message)
             reply.message = ctx.reply
             if retxml:
@@ -642,6 +643,7 @@ class SoapClient:
             else:
                 result = self.succeeded(binding, reply.message)
         except TransportError, e:
+            log.debug('\nTransportError:\n%s', e)
             if e.httpcode in (202,204):
                 result = None
             else:
@@ -658,7 +660,7 @@ class SoapClient:
         action = self.method.soap.action
         stock = { 'Content-Type' : 'text/xml; charset=utf-8', 'SOAPAction': action }
         result = dict(stock, **self.options.headers)
-        log.debug('headers = %s', result)
+        # log.debug('headers = %s', result)
         return result
     
     def succeeded(self, binding, reply):
@@ -672,7 +674,7 @@ class SoapClient:
         @rtype: I{builtin}, L{Object}
         @raise WebFault: On server.
         """
-        log.debug('http succeeded:\n%s', reply)
+        # log.debug('http succeeded:\n%s', reply)
         plugins = PluginContainer(self.options.plugins)
         if len(reply) > 0:
             reply, result = binding.get_reply(self.method, reply)
@@ -696,7 +698,7 @@ class SoapClient:
         """
         status, reason = (error.httpcode, tostr(error))
         reply = error.fp.read()
-        log.debug('http failed:\n%s', reply)
+        # log.debug('http failed:\n%s', reply)
         if status == 500:
             if len(reply) > 0:
                 r, p = binding.get_fault(reply)
