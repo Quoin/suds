@@ -26,8 +26,8 @@ import sys
 # Project properties
 #
 
-__version__ = '0.4+qi.1'
-__build__="QI 20160719"
+__version__ = '0.4+qi.2'
+__build__="QI 20170425"
 
 #
 # Exceptions
